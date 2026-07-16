@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Circuit Quest 3.0 — Electronics Dept. Orientation</title>
+<style>
+/* ============================================================
+   CIRCUIT QUEST 3.0 — built by the Electronics Dept. seniors
+   for Orientation Day. One file, no libraries, no internet.
+   ============================================================ */
+
+:root{
+  --bg:#070b13;
+  --bg2:#0c1424;
+  --panel: rgba(15,23,40,.62);
+  --panel-solid:#0f1728;
+  --line: rgba(94,234,212,.16);
+  --cyan:#5eead4;
+  --cyan-dim: rgba(94,234,212,.35);
+  --blue:#5b8cff;
+  --purple:#a78bfa;
+  --amber:#ffb454;
+  --red:#ff6b7a;
+  --text:#e9eefb;
+  --muted:#8ea0c2;
+  --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, Menlo, monospace;
+  --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  overflow-x:hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001s !important; transition-duration:.001s !important;}
+}
+
+canvas#bgCanvas{position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block;}
+canvas#fxCanvas{position:fixed; inset:0; width:100%; height:100%; z-index:40; pointer-events:none; display:block;}
+
+#app{position:relative; z-index:2; min-height:100vh; width:100%;}
+
+.screen{
+  display:none;
+  min-height:100vh;
+  width:100%;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:32px 18px 60px;
+  position:relative;
+}
+.screen.active{display:flex;}
+
+/* glass panel */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:22px;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 0 0 1px rgba(94,234,212,.04), 0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:34px 30px;
+  position:relative;
+}
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--cyan);
+  opacity:.85;
+  margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.eyebrow::before{
+  content:"";
+  width:7px; height:7px; border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 10px 2px var(--cyan);
+  animation:blink 1.6s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+h1.title{
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:clamp(30px,6vw,54px);
+  letter-spacing:-.01em;
+  line-height:1.02;
+  background:linear-gradient(100deg,#fff 10%, var(--cyan) 55%, var(--blue) 85%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 60px rgba(94,234,212,.15);
+}
+p.lede{color:var(--muted); font-size:15.5px; line-height:1.65; max-width:520px; margin-top:14px;}
+
+.btn{
+  font-family:var(--mono);
+  font-size:14px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--bg);
+  background:linear-gradient(120deg,var(--cyan),var(--blue));
+  border:none;
+  padding:15px 28px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 8px 30px -8px rgba(94,234,212,.55);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn:hover{transform:translateY(-2px); box-shadow:0 12px 34px -6px rgba(94,234,212,.7);}
+.btn:active{transform:translateY(0px) scale(.98);}
+.btn.ghost{
+  background:transparent;
+  color:var(--cyan);
+  border:1px solid var(--cyan-dim);
+  box-shadow:none;
+}
+.btn.ghost:hover{background:rgba(94,234,212,.08);}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none; box-shadow:none;}
+
+input.teamInput{
+  width:100%;
+  font-family:var(--mono);
+  font-size:17px;
+  padding:16px 18px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);
+  border-radius:12px;
+  color:var(--text);
+  outline:none;
+  letter-spacing:.02em;
+}
+input.teamInput:focus{border-color:var(--cyan-dim); box-shadow:0 0 0 3px rgba(94,234,212,.1);}
+input.teamInput::placeholder{color:#4a5875;}
+
+/* ---------- WELCOME ---------- */
+#screen-welcome .panel{max-width:640px; text-align:left;}
+.badgeRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.chip{
+  font-family:var(--mono); font-size:11.5px; color:var(--muted);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  display:flex; align-items:center; gap:6px;
+}
+.chip .dot{width:5px;height:5px;border-radius:50%;background:var(--purple);}
+
+/* ---------- REGISTRATION ---------- */
+#screen-register .panel{max-width:460px; width:100%; text-align:left;}
+.formRow{margin-top:26px;}
+.formRow label{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px;}
+.enterBtn{margin-top:22px; width:100%;}
+
+/* ---------- SENIOR WELCOME ---------- */
+#screen-senior .panel{max-width:600px; text-align:left;}
+.seniorAvatar{
+  width:54px; height:54px; border-radius:14px;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  box-shadow:0 0 24px -4px rgba(167,139,250,.6);
+  margin-bottom:16px;
+}
+.speech{font-size:19px; line-height:1.6; color:var(--text); font-weight:500;}
+.speech .sign{display:block; margin-top:14px; font-family:var(--mono); font-size:12px; color:var(--cyan); letter-spacing:.08em;}
+
+/* ---------- HUD ---------- */
+.hud{
+  position:fixed; top:0; left:0; right:0; z-index:30;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 22px;
+  background:linear-gradient(to bottom, rgba(7,11,19,.9), rgba(7,11,19,0));
+  font-family:var(--mono);
+  pointer-events:none;
+}
+.hud .stat{font-size:13px; color:var(--muted); display:flex; gap:6px; align-items:baseline;}
+.hud .stat b{font-size:18px; color:var(--cyan);}
+.hud .progressDots{display:flex; gap:6px;}
+.hud .progressDots span{width:8px;height:8px;border-radius:50%; background:rgba(255,255,255,.14); transition:.3s;}
+.hud .progressDots span.done{background:var(--cyan); box-shadow:0 0 8px var(--cyan);}
+.hud .progressDots span.now{background:var(--amber); box-shadow:0 0 10px var(--amber);}
+.hud .timerWrap{width:120px; height:6px; background:rgba(255,255,255,.08); border-radius:99px; overflow:hidden;}
+.hud .timerBar{height:100%; background:linear-gradient(90deg,var(--cyan),var(--red)); width:100%; transition:width .2s linear;}
+
+/* ---------- GAME SCREENS ---------- */
+.gameWrap{width:100%; max-width:760px; margin-top:56px;}
+.gameHead{text-align:center; margin-bottom:20px;}
+.gameHead h2{font-family:var(--mono); font-size:clamp(20px,4vw,28px); color:var(--text);}
+.gameHead p{color:var(--muted); font-size:14px; margin-top:6px;}
+.toast{
+  position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px);
+  background:var(--panel-solid); border:1px solid var(--cyan-dim); padding:10px 18px;
+  border-radius:12px; font-family:var(--mono); font-size:13px; color:var(--cyan);
+  opacity:0; transition:.35s; z-index:60; pointer-events:none; white-space:nowrap;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* Game 1: component finder */
+.grid8{display:grid; grid-template-columns:repeat(6,1fr); gap:9px;}
+@media(max-width:520px){.grid8{grid-template-columns:repeat(5,1fr);}}
+.tile{
+  aspect-ratio:1; border-radius:14px; background:rgba(255,255,255,.03);
+  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  font-size:26px; cursor:pointer; user-select:none; transition:transform .12s, background .12s, border-color .12s;
+}
+.tile:hover{transform:translateY(-2px); border-color:var(--cyan-dim);}
+.tile.found{background:rgba(94,234,212,.14); border-color:var(--cyan); animation:pop .3s;}
+.tile.wrong{animation:shake .35s;}
+.tile.disabled{pointer-events:none;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.18);}100%{transform:scale(1);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+/* Game 2: memory matrix */
+.matrix{display:grid; gap:10px; margin:0 auto; width:min(360px,84vw);}
+.mcell{
+  aspect-ratio:1; border-radius:12px; background:rgba(255,255,255,.04);
+  border:1px solid var(--line); cursor:pointer; transition:background .15s, box-shadow .15s;
+}
+.mcell.lit{background:var(--cyan); box-shadow:0 0 26px 4px var(--cyan-dim);}
+.mcell.correct{background:rgba(94,234,212,.35);}
+.mcell.bad{background:var(--red); box-shadow:0 0 26px 4px rgba(255,107,122,.5);}
+
+/* Game 3: PCB treasure hunt */
+.pcbGrid{display:grid; grid-template-columns:repeat(7,1fr); gap:7px;}
+@media(max-width:520px){.pcbGrid{grid-template-columns:repeat(5,1fr);}}
+.pcbTile{
+  aspect-ratio:1; border-radius:10px;
+  background:
+    repeating-linear-gradient(90deg, rgba(94,234,212,.05) 0 2px, transparent 2px 14px),
+    #0d1524;
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  cursor:pointer; transition:transform .15s;
+}
+.pcbTile:hover{transform:scale(1.05);}
+.pcbTile.flipped{background:rgba(255,181,84,.12); border-color:var(--amber);}
+.pcbTile.chip{background:rgba(94,234,212,.18); border-color:var(--cyan);}
+.pcbTile.empty{opacity:.35;}
+
+/* Game 4: signal tracker */
+.waveRow{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+@media(max-width:600px){.waveRow{grid-template-columns:1fr;}}
+.waveCard{
+  background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:16px;
+  padding:14px; cursor:pointer; transition:border-color .15s, transform .15s;
+}
+.waveCard:hover{transform:translateY(-3px); border-color:var(--cyan-dim);}
+.waveCard.correct{border-color:var(--cyan); background:rgba(94,234,212,.1);}
+.waveCard.wrong{border-color:var(--red); background:rgba(255,107,122,.08);}
+.waveCard canvas{width:100%; height:80px; display:block;}
+.waveLabel{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px; text-align:center; letter-spacing:.08em;}
+
+/* Game 5: virus hunt */
+.virusArena{
+  position:relative; width:100%; height:min(60vh,420px);
+  background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:20px;
+  overflow:hidden;
+}
+.virus{
+  position:absolute; width:52px; height:52px; border-radius:14px;
+  background:radial-gradient(circle at 30% 30%, #ff8fa3, #ff2f57);
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  cursor:pointer; box-shadow:0 0 26px -4px rgba(255,47,87,.8);
+  user-select:none;
+}
+.virus.caught{animation:zap .28s forwards;}
+@keyframes zap{to{transform:scale(2); opacity:0;}}
+
+/* ---------- CELEBRATION ---------- */
+#screen-celebrate .panel{max-width:560px; text-align:center;}
+.scoreReveal{font-family:var(--mono); font-size:clamp(48px,10vw,80px); font-weight:800; color:var(--cyan); text-shadow:0 0 40px rgba(94,234,212,.5); margin:14px 0;}
+.leaderboardList{margin-top:20px; text-align:left;}
+.lbRow{display:flex; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:14px;}
+.lbRow.me{background:rgba(94,234,212,.08); border-radius:10px; color:var(--cyan);}
+.lbRank{color:var(--muted); width:26px; display:inline-block;}
+
+/* ---------- transition overlay ---------- */
+#transOverlay{position:fixed; inset:0; z-index:80; pointer-events:none; opacity:0;}
+#transOverlay.glitch{background:
+   linear-gradient(90deg, rgba(94,234,212,.12), transparent 40%, rgba(167,139,250,.12));
+   mix-blend-mode:screen; animation:glitchFx .5s steps(6) forwards;}
+#transOverlay.sweep{background:linear-gradient(100deg, transparent 40%, rgba(94,234,212,.35) 50%, transparent 60%); background-size:300% 100%; animation:sweepFx .6s ease forwards;}
+#transOverlay.portal{background:radial-gradient(circle at 50% 50%, rgba(94,234,212,.5), transparent 60%); animation:portalFx .55s ease forwards;}
+@keyframes glitchFx{0%{opacity:0;}20%{opacity:.9; transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-3px);}100%{opacity:0;}}
+@keyframes sweepFx{0%{background-position:200% 0; opacity:1;}100%{background-position:-50% 0; opacity:0;}}
+@keyframes portalFx{0%{opacity:0; transform:scale(.2);}40%{opacity:1;}100%{opacity:0; transform:scale(2.4);}}
+
+/* ---------- easter eggs / hidden details ---------- */
+.easterEgg{position:fixed; z-index:15; cursor:pointer; opacity:.75; transition:transform .2s, opacity .2s;}
+.easterEgg:hover{transform:scale(1.15) rotate(-4deg); opacity:1;}
+.easterTip{
+  position:fixed; z-index:70; background:var(--panel-solid); border:1px solid var(--cyan-dim);
+  padding:8px 12px; border-radius:10px; font-family:var(--mono); font-size:12px; color:var(--cyan);
+  opacity:0; transform:translateY(6px); transition:.25s; pointer-events:none; max-width:220px;
+}
+.easterTip.show{opacity:1; transform:translateY(0);}
+
+footer.credit{
+  position:fixed; bottom:10px; left:0; right:0; text-align:center;
+  font-family:var(--mono); font-size:10.5px; color:#3d4b68; letter-spacing:.1em; z-index:5;
+}
+
+/* misc utility */
+.row{display:flex; gap:12px; flex-wrap:wrap;}
+.center{text-align:center;}
+.mt{margin-top:22px;}
+.smallmuted{font-family:var(--mono); font-size:12px; color:var(--muted);}
+::selection{background:var(--cyan); color:#000;}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<canvas id="fxCanvas"></canvas>
+<div id="transOverlay"></div>
+<div class="toast" id="toast"></div>
+
+<div class="hud" id="hud" style="display:none;">
+  <div class="stat">SCORE&nbsp;<b id="hudScore">0</b></div>
+  <div class="progressDots" id="hudDots"></div>
+  <div class="row" style="gap:14px; align-items:center;">
+    <div class="stat">COMBO&nbsp;<b id="hudCombo">x1</b></div>
+    <div class="timerWrap"><div class="timerBar" id="hudTimer"></div></div>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- WELCOME -->
+  <section class="screen active" id="screen-welcome">
+    <div class="panel">
+      <div class="eyebrow">Electronics Dept. · Orientation 2026</div>
+      <h1 class="title">CIRCUIT QUEST 3.0</h1>
+      <p class="lede">Built over one very sleep-deprived month by five seniors who really should've been finishing their own lab reports. Five challenges, one PCB, zero mercy. Let's find out what your team is made of.</p>
+      <div class="badgeRow">
+        <div class="chip"><span class="dot"></span>5 challenges</div>
+        <div class="chip"><span class="dot"></span>Team based</div>
+        <div class="chip"><span class="dot"></span>Live leaderboard</div>
+        <div class="chip"><span class="dot"></span>~10 minutes</div>
+      </div>
+      <div class="mt"><button class="btn" id="btnStart">Power On →</button></div>
+    </div>
+  </section>
+
+  <!-- REGISTRATION -->
+  <section class="screen" id="screen-register">
+    <div class="panel">
+      <div class="eyebrow">Step 1 of 2</div>
+      <h1 class="title" style="font-size:clamp(24px,5vw,34px);">Name your team</h1>
+      <p class="lede" style="font-size:14px;">No emails, no player names, no forms longer than this one line. Just something we can put on the trophy shelf.</p>
+      <div class="formRow">
+        <label for="teamName">Team name</label>
+        <input class="teamInput" id="teamName" placeholder="Enter your Team Name" maxlength="24" autocomplete="off">
+      </div>
+      <button class="btn enterBtn" id="btnEnterArena">Enter the Arena</button>
+    </div>
+  </section>
+
+  <!-- SENIOR WELCOME -->
+  <section class="screen" id="screen-senior">
+    <div class="panel">
+      <div class="seniorAvatar">🧑‍🔧</div>
+      <div class="eyebrow">A senior walks up to your bench</div>
+      <p class="speech" id="seniorLine">Loading...</p>
+      <div class="mt"><button class="btn" id="btnBeginGames">Let's Begin →</button></div>
+    </div>
+  </section>
+
+  <!-- GAME 1: COMPONENT FINDER -->
+  <section class="screen" id="screen-g1">
+    <div class="gameWrap">
+      <div class="gameHead">
+        <div class="eyebrow center" style="justify-content:center;">Challenge 1 · Component Finder</div>
+        <h2 id="g1Instruction">Find the components</h2>
+        <p id="g1Sub"></p>
+      </div>
+      <div class="grid8" id="g1Grid"></div>
+    </div>
+  </section>
+
+  <!-- GAME 2: MEMORY MATRIX -->
+  <section class="screen" id="screen-g2">
+    <div class="gameWrap" style="max-width:460px;">
+      <div class="gameHead">
+        <div class="eyebrow center" style="justify-content:center;">Challenge 2 · Memory Matrix</div>
+        <h2 id="g2Instruction">Watch. Remember. Repeat.</h2>
+        <p id="g2Sub"></p>
+      </div>
+      <div class="matrix" id="g2Grid"></div>
+    </div>
+  </section>
+
+  <!-- GAME 3: PCB TREASURE HUNT -->
+  <section class="screen" id="screen-g3">
+    <div class="gameWrap">
+      <div class="gameHead">
+        <div class="eyebrow center" style="justify-content:center;">Challenge 3 · PCB Treasure Hunt</div>
+        <h2>Find every hidden chip</h2>
+        <p id="g3Sub"></p>
+      </div>
+      <div class="pcbGrid" id="g3Grid"></div>
+    </div>
+  </section>
+
+  <!-- GAME 4: SIGNAL TRACKER -->
+  <section class="screen" id="screen-g4">
+    <div class="gameWrap">
+      <div class="gameHead">
+        <div class="eyebrow center" style="justify-content:center;">Challenge 4 · Signal Tracker</div>
+        <h2>Pick the stable waveform</h2>
+        <p id="g4Sub"></p>
+      </div>
+      <div class="waveRow" id="g4Row"></div>
+    </div>
+  </section>
+
+  <!-- GAME 5: VIRUS HUNT -->
+  <section class="screen" id="screen-g5">
+    <div class="gameWrap">
+      <div class="gameHead">
+        <div class="eyebrow center" style="justify-content:center;">Challenge 5 · Virus Hunt</div>
+        <h2>Catch the corrupted chip</h2>
+        <p id="g5Sub"></p>
+      </div>
+      <div class="virusArena" id="g5Arena"></div>
+    </div>
+  </section>
+
+  <!-- MID-GAME RESULT -->
+  <section class="screen" id="screen-result">
+    <div class="panel center" style="max-width:440px;">
+      <div class="eyebrow" style="justify-content:center;">Challenge complete</div>
+      <h1 class="title" style="font-size:clamp(26px,5vw,36px);" id="resultTitle">Nice one.</h1>
+      <p class="lede" id="resultLine" style="margin:14px auto 0;"></p>
+      <div class="mt"><button class="btn" id="btnNextChallenge">Continue →</button></div>
+    </div>
+  </section>
+
+  <!-- CELEBRATION -->
+  <section class="screen" id="screen-celebrate">
+    <div class="panel">
+      <div class="eyebrow" style="justify-content:center;">Orientation complete</div>
+      <p class="speech center" id="celebrateLine" style="font-size:17px;"></p>
+      <div class="scoreReveal center" id="finalScore">0</div>
+      <p class="smallmuted center" id="celebrateSub"></p>
+      <div class="row center mt" style="justify-content:center;">
+        <button class="btn" id="btnViewLB">View Leaderboard →</button>
+        <button class="btn ghost" id="btnReplay">Play Again</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section class="screen" id="screen-lb">
+    <div class="panel" style="max-width:480px; width:100%;">
+      <div class="eyebrow">Hall of Fame · This device</div>
+      <h1 class="title" style="font-size:clamp(24px,5vw,32px);">Trophy Shelf</h1>
+      <div class="leaderboardList" id="lbList"></div>
+      <div class="mt center"><button class="btn ghost" id="btnReplay2">Play Again</button></div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="credit">designed &amp; soldered by the electronics dept. seniors — orientation 2026</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   0. UTILITIES
+   ========================================================= */
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const rand = (min,max) => Math.random()*(max-min)+min;
+const randInt = (min,max) => Math.floor(rand(min,max+1));
+const choice = arr => arr[randInt(0, arr.length-1)];
+const shuffle = arr => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]];} return a; };
+
+// pick-without-immediate-repeat helper for message pools
+function makePicker(pool){
+  let last = -1;
+  return function(){
+    if(pool.length===1) return pool[0];
+    let idx;
+    do{ idx = randInt(0, pool.length-1); }while(idx===last);
+    last = idx;
+    return pool[idx];
+  };
+}
+
+/* =========================================================
+   1. STATE
+   ========================================================= */
+const state = {
+  team: "",
+  score: 0,
+  combo: 1,
+  maxCombo: 1,
+  level: 0, // 0..4 index into 5 games
+  levelScores: []
+};
+
+const LEVELS = ["g1","g2","g3","g4","g5"];
+
+/* =========================================================
+   2. SOUND — tiny Web Audio synth, no files
+   ========================================================= */
+const SFX = (function(){
+  let ctx = null;
+  function ac(){ if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); } return ctx; }
+  function tone(freq, dur, type="sine", gainPeak=0.18, delay=0){
+    try{
+      const c = ac();
+      const t0 = c.currentTime + delay;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(gainPeak, t0+0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    }catch(e){ /* audio unsupported, silently ignore */ }
+  }
+  return {
+    click: ()=> tone(320, .06, "square", .10),
+    correct: ()=> { tone(660,.09,"sine",.16); tone(880,.12,"sine",.14,.06); },
+    wrong: ()=> tone(140,.18,"sawtooth",.14),
+    combo: (n)=> tone(500 + Math.min(n,8)*60, .1, "triangle", .15),
+    countdown: ()=> tone(220,.05,"square",.08),
+    victory: ()=> { [523,659,784,1046].forEach((f,i)=> tone(f,.22,"sine",.16, i*.11)); }
+  };
+})();
+
+/* =========================================================
+   3. LIVE CANVAS BACKGROUND — circuit traces & particles
+   ========================================================= */
+const bgCanvas = $("#bgCanvas");
+const bgCtx = bgCanvas.getContext("2d");
+let W,H,DPR;
+function resizeBg(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  bgCanvas.width = W*DPR; bgCanvas.height = H*DPR;
+  bgCanvas.style.width = W+"px"; bgCanvas.style.height = H+"px";
+  bgCtx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener("resize", resizeBg);
+resizeBg();
+
+// nodes connected by traces
+let nodes = [];
+function buildNodes(){
+  nodes = [];
+  const count = Math.max(14, Math.floor((W*H)/70000));
+  for(let i=0;i<count;i++){
+    nodes.push({
+      x: rand(0,W), y: rand(0,H),
+      vx: rand(-.08,.08), vy: rand(-.08,.08),
+      r: rand(1.2,2.6),
+      pulse: rand(0, Math.PI*2)
+    });
+  }
+}
+buildNodes();
+window.addEventListener("resize", ()=> buildNodes());
+
+// floating binary particles
+let bits = [];
+function buildBits(){
+  bits = [];
+  const count = Math.floor(W/70);
+  for(let i=0;i<count;i++){
+    bits.push({x:rand(0,W), y:rand(0,H), v: rand(0,1)>.5?"1":"0", speed: rand(6,18), size: rand(9,13), op: rand(.06,.22)});
+  }
+}
+buildBits();
+window.addEventListener("resize", buildBits);
+
+let tGlobal = 0;
+function drawBg(){
+  tGlobal += 0.012;
+  bgCtx.clearRect(0,0,W,H);
+
+  // vertical vignette
+  const grad = bgCtx.createRadialGradient(W*0.5,H*0.35,0, W*0.5,H*0.35, Math.max(W,H)*0.8);
+  grad.addColorStop(0,"rgba(20,32,54,0.55)");
+  grad.addColorStop(1,"rgba(7,11,19,1)");
+  bgCtx.fillStyle = grad;
+  bgCtx.fillRect(0,0,W,H);
+
+  // connect nearby nodes with faint traces (PCB feel)
+  bgCtx.lineWidth = 1;
+  for(let i=0;i<nodes.length;i++){
+    const a = nodes[i];
+    a.x += a.vx; a.y += a.vy; a.pulse += 0.02;
+    if(a.x<0||a.x>W) a.vx*=-1;
+    if(a.y<0||a.y>H) a.vy*=-1;
+    for(let j=i+1;j<nodes.length;j++){
+      const b = nodes[j];
+      const dx=a.x-b.x, dy=a.y-b.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      if(d<150){
+        const op = (1-d/150)*0.12;
+        bgCtx.strokeStyle = `rgba(94,234,212,${op})`;
+        bgCtx.beginPath();
+        // right-angle circuit-style path
+        bgCtx.moveTo(a.x,a.y);
+        bgCtx.lineTo(b.x,a.y);
+        bgCtx.lineTo(b.x,b.y);
+        bgCtx.stroke();
+      }
+    }
+  }
+  // nodes glow
+  for(const n of nodes){
+    const glow = 0.5 + Math.sin(n.pulse)*0.5;
+    bgCtx.beginPath();
+    bgCtx.fillStyle = `rgba(94,234,212,${0.25+glow*0.35})`;
+    bgCtx.arc(n.x,n.y,n.r+glow*1.4,0,Math.PI*2);
+    bgCtx.fill();
+  }
+
+  // binary rain (very subtle)
+  bgCtx.font = "11px ui-monospace, monospace";
+  for(const b of bits){
+    b.y += b.speed*0.016;
+    if(b.y>H){ b.y=-10; b.x=rand(0,W); b.v = rand(0,1)>.5?"1":"0"; }
+    bgCtx.fillStyle = `rgba(167,139,250,${b.op})`;
+    bgCtx.fillText(b.v, b.x, b.y);
+  }
+
+  // occasional traveling pulse along a random edge
+  if(Math.random()<0.01 && nodes.length>2){
+    spawnPulse();
+  }
+  drawPulses();
+
+  requestAnimationFrame(drawBg);
+}
+
+let pulses = [];
+function spawnPulse(){
+  const a = choice(nodes), b = choice(nodes);
+  if(a===b) return;
+  pulses.push({a,b,t:0});
+}
+function drawPulses(){
+  pulses = pulses.filter(p=>p.t<1);
+  for(const p of pulses){
+    p.t += 0.02;
+    const midx = p.b.x, midy = p.a.y;
+    // parametrize along the two-segment path
+    let x,y;
+    if(p.t<0.5){
+      const tt=p.t/0.5;
+      x = p.a.x + (midx-p.a.x)*tt; y=p.a.y;
+    }else{
+      const tt=(p.t-0.5)/0.5;
+      x = midx; y = p.a.y + (p.b.y-p.a.y)*tt;
+    }
+    bgCtx.beginPath();
+    bgCtx.fillStyle = "rgba(255,181,84,0.9)";
+    bgCtx.shadowColor = "rgba(255,181,84,0.9)";
+    bgCtx.shadowBlur = 8;
+    bgCtx.arc(x,y,2.4,0,Math.PI*2);
+    bgCtx.fill();
+    bgCtx.shadowBlur = 0;
+  }
+}
+requestAnimationFrame(drawBg);
+
+/* ---- fx canvas: confetti / bursts ---- */
+const fxCanvas = $("#fxCanvas");
+const fxCtx = fxCanvas.getContext("2d");
+function resizeFx(){
+  fxCanvas.width = window.innerWidth*DPR; fxCanvas.height = window.innerHeight*DPR;
+  fxCanvas.style.width = window.innerWidth+"px"; fxCanvas.style.height = window.innerHeight+"px";
+  fxCtx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener("resize", resizeFx);
+resizeFx();
+
+let confetti = [];
+function burstConfetti(n=140){
+  const colors = ["#5eead4","#5b8cff","#a78bfa","#ffb454","#ff6b7a"];
+  for(let i=0;i<n;i++){
+    confetti.push({
+      x: window.innerWidth/2, y: window.innerHeight*0.35,
+      vx: rand(-6,6), vy: rand(-9,-2),
+      g: 0.18, size: rand(4,9),
+      rot: rand(0,Math.PI*2), vr: rand(-.2,.2),
+      color: choice(colors), life: 0, maxLife: rand(90,160)
+    });
+  }
+}
+function tickConfetti(){
+  fxCtx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  confetti = confetti.filter(c=>c.life<c.maxLife);
+  for(const c of confetti){
+    c.life++; c.vy += c.g*0.1; c.x += c.vx; c.y += c.vy; c.rot += c.vr;
+    fxCtx.save();
+    fxCtx.translate(c.x,c.y); fxCtx.rotate(c.rot);
+    fxCtx.fillStyle = c.color;
+    fxCtx.globalAlpha = Math.max(0, 1-c.life/c.maxLife);
+    fxCtx.fillRect(-c.size/2,-c.size/2,c.size,c.size*0.6);
+    fxCtx.restore();
+  }
+  requestAnimationFrame(tickConfetti);
+}
+requestAnimationFrame(tickConfetti);
+
+/* =========================================================
+   4. SCREEN TRANSITIONS
+   ========================================================= */
+const overlay = $("#transOverlay");
+function showScreen(id, fx){
+  const kinds = ["glitch","sweep","portal"];
+  const kind = fx || choice(kinds);
+  overlay.className = "";
+  void overlay.offsetWidth;
+  overlay.classList.add(kind);
+  setTimeout(()=>{
+    $$(".screen.active").forEach(s=>s.classList.remove("active"));
+    const target = document.getElementById("screen-"+id) || document.getElementById(id);
+    if(target) target.classList.add("active");
+    window.scrollTo(0,0);
+  }, 180);
+  setTimeout(()=>{ overlay.className=""; }, 650);
+}
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=> t.classList.remove("show"), 1600);
+}
+
+/* =========================================================
+   5. MESSAGE POOLS — written like real seniors, not a bot
+   ========================================================= */
+const welcomeMessages = [
+  "Welcome to Electronics! We've hidden a few fun challenges around here — work together and let's see what your team can do.",
+  "Alright, fresh batch! We spent way too many late nights building this, so please, act impressed.",
+  "You made it to the department that actually solders things. Five challenges stand between you and free snacks later.",
+  "We were exactly like you a year ago — confused, caffeinated, and standing in this same spot. Let's fix that.",
+  "This is our little orientation game. Nothing fancy, just five rounds designed by people who really enjoy watching juniors panic (kindly).",
+  "Consider this your first lab exercise. No lab coat required, just quick fingers and a decent memory.",
+  "Fair warning: challenge two has broken more egos than any circuit exam. Good luck.",
+  "Welcome aboard. Break something (virtually), laugh a little, and by the end you'll officially be one of us."
+];
+const praiseMessages = [
+  "Nice one!", "You've got sharp eyes.", "Someone definitely knows Electronics.",
+  "Looks like your team came prepared.", "Okay, that was actually impressive.",
+  "Not bad, junior.", "Clean work — a senior would be proud.", "We'll allow it. Barely kidding, that was great.",
+  "That's the kind of precision we like to see.", "You're making the rest of the freshers look bad.",
+  "Solid! Whoever's on the keyboard, buy them a chai later.", "We didn't expect anyone to clear that so fast.",
+  "That's a first-attempt clear. Respect.", "Textbook execution.", "Alright, alright — noted for the leaderboard."
+];
+const missMessages = [
+  "Almost there.", "That one tricks everyone, don't worry.", "We'll ignore that mistake 😄",
+  "Close! The resistor colour bands get us all eventually.", "Even our seniors fumbled this one back in the day.",
+  "Ouch. Shake it off, plenty of challenges left.", "That's why we call it a trap, not a typo.",
+  "Happens to the best of us — recalibrate and go again.", "Combo reset. Character building, we call it.",
+  "Everyone touches the wrong wire once. Metaphorically. Hopefully."
+];
+const comboMessages = [
+  "Combo's heating up!", "Now we're talking.", "You're on a roll.", "That's a streak worth bragging about.",
+  "Keep this up and you'll top the shelf.", "Someone's been practicing.", "The circuit is smiling on you right now."
+];
+const levelIntroMessages = {
+  g1: ["Spot the right components before the timer runs out — the decoys are ruthless.", "Five specific parts are hiding among the clutter. Find them fast."],
+  g2: ["Watch the sequence light up, then repeat it back. Gets harder every round.", "Pure memory. No pressure. (There is pressure.)"],
+  g3: ["Somewhere on this board are real chips hiding among decoys. Flip fast, flip smart.", "The board's noisy on purpose. Find every real chip before time's up."],
+  g4: ["One of these waveforms is clean. The rest are lying to you.", "Pick the stable signal — noise and glitches are designed to fool you."],
+  g5: ["A corrupted chip is loose on the board. Catch it before it escapes.", "It moves fast and gets faster. Tap quick."]
+};
+const resultLines = [
+  "Challenge logged. On to the next one.", "That's one down. The board remembers every point.",
+  "Solid effort — the next room's already warming up.", "You're building quite the reputation with us."
+];
+const endingMessages = [
+  "Congratulations! Your team completed every challenge. On behalf of all the seniors, welcome to the Electronics Department. We hope you enjoyed the journey.",
+  "That's a wrap! Five challenges down, and honestly, you handled it better than most seniors did on their first try. Welcome in.",
+  "Board complete. Chips found, signals traced, virus caught. You're officially one of us now — welcome to Electronics.",
+  "You've made it through everything we built for you. From all five of us who stayed up way too late on this: welcome to the family."
+];
+
+const pickWelcome = makePicker(welcomeMessages);
+const pickPraise = makePicker(praiseMessages);
+const pickMiss = makePicker(missMessages);
+const pickCombo = makePicker(comboMessages);
+const pickResult = makePicker(resultLines);
+const pickEnding = makePicker(endingMessages);
+
+/* =========================================================
+   6. EASTER EGGS — small hidden clickable details
+   ========================================================= */
+const eggMessages = [
+  "psst — challenge 3 has more chips than you'd think.",
+  "the coffee mug is 90% caffeine, 10% mug.",
+  "our robot mascot waves back. try it again.",
+  "we argued about the colour palette for three days.",
+  "true story: this whole thing was built in one all-nighter... and a few naps.",
+  "if you're reading this, you're the kind of junior we like."
+];
+function spawnEasterEggs(){
+  const emojis = ["☕","🤖","📝","🔧","🧠","💡"];
+  const positions = [
+    {left:"4%", bottom:"12%"}, {right:"5%", bottom:"18%"}, {left:"6%", top:"22%"},
+    {right:"6%", top:"16%"}
+  ];
+  positions.forEach((pos,i)=>{
+    const el = document.createElement("div");
+    el.className = "easterEgg";
+    el.style.fontSize = "26px";
+    Object.assign(el.style, pos, {position:"fixed"});
+    el.textContent = emojis[i % emojis.length];
+    el.title = "?";
+    el.addEventListener("click", (e)=>{
+      SFX.click();
+      const tip = document.createElement("div");
+      tip.className = "easterTip";
+      tip.textContent = choice(eggMessages);
+      tip.style.left = Math.min(window.innerWidth-240, e.clientX)+"px";
+      tip.style.top = (e.clientY-40)+"px";
+      document.body.appendChild(tip);
+      requestAnimationFrame(()=> tip.classList.add("show"));
+      setTimeout(()=>{ tip.classList.remove("show"); setTimeout(()=>tip.remove(),300); }, 2200);
+    });
+    document.body.appendChild(el);
+  });
+}
+spawnEasterEggs();
+
+/* =========================================================
+   7. HUD
+   ========================================================= */
+const hud = $("#hud");
+const hudScore = $("#hudScore");
+const hudCombo = $("#hudCombo");
+const hudTimer = $("#hudTimer");
+const hudDots = $("#hudDots");
+
+function initHudDots(){
+  hudDots.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const d = document.createElement("span");
+    hudDots.appendChild(d);
+  }
+}
+function updateHudDots(){
+  $$("span", hudDots).forEach((d,i)=>{
+    d.className = i<state.level ? "done" : (i===state.level ? "now" : "");
+  });
+}
+function updateScoreHud(){
+  hudScore.textContent = state.score;
+  hudCombo.textContent = "x"+state.combo;
+}
+function addScore(base){
+  const gained = Math.round(base*state.combo);
+  state.score += gained;
+  state.combo = Math.min(state.combo+1, 8);
+  updateScoreHud();
+  spawnPopup("+"+gained);
+  if(state.combo>=4 && state.combo%2===0){ toast(pickCombo()); SFX.combo(state.combo); }
+  return gained;
+}
+function breakCombo(){
+  state.combo = 1;
+  updateScoreHud();
+}
+function spawnPopup(text){
+  const el = document.createElement("div");
+  el.textContent = text;
+  el.style.cssText = `position:fixed; left:50%; top:40%; transform:translate(-50%,-50%);
+    font-family:var(--mono); font-weight:800; font-size:22px; color:#5eead4; z-index:70;
+    pointer-events:none; text-shadow:0 0 20px rgba(94,234,212,.7); transition:all .7s ease;`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{
+    el.style.transform = "translate(-50%,-140%) scale(1.3)";
+    el.style.opacity = "0";
+  });
+  setTimeout(()=> el.remove(), 750);
+}
+
+/* generic countdown timer helper used across games */
+function startTimer(seconds, onTick, onDone){
+  let remaining = seconds;
+  hudTimer.style.width = "100%";
+  const total = seconds;
+  const iv = setInterval(()=>{
+    remaining -= 0.1;
+    hudTimer.style.width = Math.max(0,(remaining/total)*100)+"%";
+    if(remaining<=3.05 && remaining>0 && Math.abs(remaining%1)<0.11) SFX.countdown();
+    if(onTick) onTick(remaining);
+    if(remaining<=0){ clearInterval(iv); if(onDone) onDone(); }
+  }, 100);
+  return { cancel: ()=> clearInterval(iv) };
+}
+
+/* =========================================================
+   8. FLOW CONTROL
+   ========================================================= */
+$("#btnStart").addEventListener("click", ()=>{
+  SFX.click();
+  showScreen("register","portal");
+});
+
+$("#btnEnterArena").addEventListener("click", ()=>{
+  const val = $("#teamName").value.trim();
+  if(!val){ $("#teamName").focus(); $("#teamName").style.borderColor = "var(--red)"; return; }
+  state.team = val.slice(0,24);
+  SFX.correct();
+  $("#seniorLine").textContent = pickWelcome();
+  showScreen("senior","sweep");
+});
+$("#teamName").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#btnEnterArena").click(); });
+
+$("#btnBeginGames").addEventListener("click", ()=>{
+  SFX.click();
+  hud.style.display = "flex";
+  initHudDots();
+  state.level = 0;
+  updateHudDots();
+  updateScoreHud();
+  showScreen("g1","glitch");
+  setTimeout(()=> startGame1(), 300);
+});
+
+$("#btnNextChallenge").addEventListener("click", ()=>{
+  SFX.click();
+  state.level++;
+  updateHudDots();
+  if(state.level>=5){
+    finishGame();
+  }else{
+    const id = LEVELS[state.level];
+    showScreen(id, choice(["glitch","sweep","portal"]));
+    setTimeout(()=> startLevel(id), 300);
+  }
+});
+
+function startLevel(id){
+  if(id==="g1") startGame1();
+  if(id==="g2") startGame2();
+  if(id==="g3") startGame3();
+  if(id==="g4") startGame4();
+  if(id==="g5") startGame5();
+}
+
+function completeChallenge(pointsEarned){
+  $("#resultTitle").textContent = pickPraise();
+  $("#resultLine").textContent = pickResult() + `  (+${pointsEarned} this round)`;
+  showScreen("result","sweep");
+}
+
+function finishGame(){
+  hud.style.display = "none";
+  $("#celebrateLine").textContent = pickEnding();
+  $("#finalScore").textContent = "0";
+  $("#celebrateSub").textContent = `Team ${state.team} · best combo x${state.maxCombo}`;
+  showScreen("celebrate","portal");
+  setTimeout(()=>{
+    SFX.victory();
+    burstConfetti(160);
+    animateCount($("#finalScore"), 0, state.score, 1100);
+  }, 400);
+  saveToLeaderboard();
+}
+
+function animateCount(el, from, to, dur){
+  const t0 = performance.now();
+  function step(now){
+    const p = Math.min(1, (now-t0)/dur);
+    const eased = 1-Math.pow(1-p,3);
+    el.textContent = Math.round(from + (to-from)*eased);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* =========================================================
+   9. LEADERBOARD (localStorage)
+   ========================================================= */
+const LB_KEY = "cq3_leaderboard";
+function saveToLeaderboard(){
+  let list = [];
+  try{ list = JSON.parse(localStorage.getItem(LB_KEY)) || []; }catch(e){ list = []; }
+  list.push({ team: state.team || "Unnamed Team", score: state.score, date: new Date().toISOString() });
+  list.sort((a,b)=> b.score-a.score);
+  list = list.slice(0,10);
+  try{ localStorage.setItem(LB_KEY, JSON.stringify(list)); }catch(e){}
+}
+function renderLeaderboard(){
+  let list = [];
+  try{ list = JSON.parse(localStorage.getItem(LB_KEY)) || []; }catch(e){ list = []; }
+  const wrap = $("#lbList");
+  wrap.innerHTML = "";
+  if(!list.length){
+    wrap.innerHTML = `<p class="smallmuted">No scores yet — be the first team on the shelf.</p>`;
+    return;
+  }
+  list.forEach((row,i)=>{
+    const div = document.createElement("div");
+    div.className = "lbRow" + (row.team===state.team && row.score===state.score ? " me" : "");
+    div.innerHTML = `<span><span class="lbRank">#${i+1}</span>${escapeHtml(row.team)}</span><span>${row.score}</span>`;
+    wrap.appendChild(div);
+  });
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+$("#btnViewLB").addEventListener("click", ()=>{ SFX.click(); renderLeaderboard(); showScreen("lb","sweep"); });
+function resetAndReplay(){
+  SFX.click();
+  state.score=0; state.combo=1; state.maxCombo=1; state.level=0; state.team="";
+  $("#teamName").value = "";
+  showScreen("welcome","portal");
+}
+$("#btnReplay").addEventListener("click", resetAndReplay);
+$("#btnReplay2").addEventListener("click", resetAndReplay);
+
+/* track max combo globally */
+const _origAddScore = addScore;
+addScore = function(base){
+  const g = _origAddScore(base);
+  state.maxCombo = Math.max(state.maxCombo, state.combo);
+  return g;
+};
+
+/* =========================================================
+   10. GAME 1 — COMPONENT FINDER
+   ========================================================= */
+const COMPONENT_POOL = [
+  {e:"🟫", name:"resistor"}, {e:"🔵", name:"capacitor"}, {e:"🔴", name:"LED"},
+  {e:"⚡", name:"diode"}, {e:"🟩", name:"IC chip"}, {e:"🔺", name:"transistor"},
+  {e:"🔋", name:"battery"}, {e:"🔘", name:"switch"}, {e:"🧲", name:"coil"}, {e:"🌀", name:"inductor"}
+];
+let g1Timer=null, g1Remaining=0, g1FoundCount=0, g1Target=null, g1Points=0;
+
+function startGame1(){
+  g1Points = 0;
+  const grid = $("#g1Grid");
+  grid.innerHTML = "";
+  g1Target = choice(COMPONENT_POOL);
+  const targetCount = 5;
+  $("#g1Instruction").textContent = `Find all the ${g1Target.name}s`;
+  $("#g1Sub").textContent = choice(levelIntroMessages.g1) + ` Look for ${g1Target.e}`;
+
+  const totalTiles = 30;
+  const tiles = [];
+  for(let i=0;i<targetCount;i++) tiles.push(g1Target);
+  while(tiles.length<totalTiles){
+    const c = choice(COMPONENT_POOL);
+    if(c.name!==g1Target.name) tiles.push(c);
+  }
+  shuffle(tiles).forEach(c=>{
+    const t = document.createElement("div");
+    t.className = "tile";
+    t.textContent = c.e;
+    t.dataset.name = c.name;
+    t.addEventListener("click", ()=> onG1Click(t,c));
+    grid.appendChild(t);
+  });
+
+  g1FoundCount = 0;
+  if(g1Timer) g1Timer.cancel();
+  g1Timer = startTimer(20, null, ()=> endGame1(false));
+}
+function onG1Click(el, c){
+  if(el.classList.contains("disabled")) return;
+  if(c.name===g1Target.name){
+    el.classList.add("found","disabled");
+    SFX.correct();
+    g1Points += addScore(10);
+    g1FoundCount++;
+    if(g1FoundCount>=5) endGame1(true);
+  }else{
+    el.classList.add("wrong");
+    SFX.wrong();
+    breakCombo();
+    toast(pickMiss());
+    setTimeout(()=> el.classList.remove("wrong"), 350);
+  }
+}
+function endGame1(success){
+  if(g1Timer) g1Timer.cancel();
+  $$(".tile", $("#g1Grid")).forEach(t=> t.classList.add("disabled"));
+  if(success) g1Points += addScore(20);
+  completeChallenge(g1Points);
+}
+
+/* =========================================================
+   11. GAME 2 — MEMORY MATRIX
+   ========================================================= */
+let g2Round=0, g2Size=3, g2Sequence=[], g2PlayerIdx=0, g2Points=0, g2Busy=false;
+function startGame2(){
+  g2Round = 0; g2Points = 0;
+  $("#g2Sub").textContent = choice(levelIntroMessages.g2);
+  nextG2Round();
+}
+function nextG2Round(){
+  g2Round++;
+  if(g2Round>4){ completeChallenge(g2Points + addScore(15)); return; }
+  g2Size = 4;
+  const grid = $("#g2Grid");
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `repeat(${g2Size},1fr)`;
+  const cells = [];
+  for(let i=0;i<g2Size*g2Size;i++){
+    const c = document.createElement("div");
+    c.className = "mcell";
+    c.dataset.idx = i;
+    c.addEventListener("click", ()=> onG2Cell(c));
+    grid.appendChild(c);
+    cells.push(c);
+  }
+  $("#g2Instruction").textContent = `Round ${g2Round} of 4`;
+  const seqLen = 2 + g2Round; // increasing difficulty
+  g2Sequence = [];
+  for(let i=0;i<seqLen;i++) g2Sequence.push(randInt(0,g2Size*g2Size-1));
+  g2PlayerIdx = 0;
+  g2Busy = true;
+  playG2Sequence(cells);
+}
+function playG2Sequence(cells){
+  let i=0;
+  const iv = setInterval(()=>{
+    if(i>0) cells[g2Sequence[i-1]].classList.remove("lit");
+    if(i>=g2Sequence.length){ clearInterval(iv); g2Busy=false; return; }
+    cells[g2Sequence[i]].classList.add("lit");
+    SFX.click();
+    i++;
+  }, 550);
+}
+function onG2Cell(c){
+  if(g2Busy) return;
+  const idx = parseInt(c.dataset.idx,10);
+  if(idx===g2Sequence[g2PlayerIdx]){
+    c.classList.add("correct");
+    SFX.correct();
+    g2Points += addScore(6);
+    g2PlayerIdx++;
+    setTimeout(()=> c.classList.remove("correct"), 250);
+    if(g2PlayerIdx>=g2Sequence.length){
+      toast(pickPraise());
+      setTimeout(nextG2Round, 500);
+    }
+  }else{
+    c.classList.add("bad");
+    SFX.wrong();
+    breakCombo();
+    toast(pickMiss());
+    g2Busy = true;
+    setTimeout(()=>{ c.classList.remove("bad"); nextG2Round(); }, 700);
+  }
+}
+
+/* =========================================================
+   12. GAME 3 — PCB TREASURE HUNT
+   ========================================================= */
+let g3Timer=null, g3Points=0, g3Found=0, g3Needed=0;
+function startGame3(){
+  g3Points=0; g3Found=0;
+  $("#g3Sub").textContent = choice(levelIntroMessages.g3);
+  const grid = $("#g3Grid");
+  grid.innerHTML = "";
+  const total = 28;
+  g3Needed = 6;
+  const chipIdx = new Set();
+  while(chipIdx.size<g3Needed) chipIdx.add(randInt(0,total-1));
+  for(let i=0;i<total;i++){
+    const t = document.createElement("div");
+    t.className = "pcbTile";
+    t.dataset.chip = chipIdx.has(i) ? "1":"0";
+    t.addEventListener("click", ()=> onG3Click(t));
+    grid.appendChild(t);
+  }
+  if(g3Timer) g3Timer.cancel();
+  g3Timer = startTimer(18, null, ()=> endGame3());
+}
+function onG3Click(t){
+  if(t.classList.contains("flipped")||t.classList.contains("chip")) return;
+  if(t.dataset.chip==="1"){
+    t.classList.add("chip");
+    t.textContent = "🟩";
+    SFX.correct();
+    g3Points += addScore(9);
+    g3Found++;
+    if(g3Found>=g3Needed) endGame3(true);
+  }else{
+    t.classList.add("flipped","empty");
+    t.textContent = "·";
+    SFX.wrong();
+    breakCombo();
+  }
+}
+function endGame3(success){
+  if(g3Timer) g3Timer.cancel();
+  $$(".pcbTile", $("#g3Grid")).forEach(t=> t.style.pointerEvents="none");
+  if(success) g3Points += addScore(25);
+  completeChallenge(g3Points);
+}
+
+/* =========================================================
+   13. GAME 4 — SIGNAL TRACKER
+   ========================================================= */
+let g4Round=0, g4Points=0;
+function startGame4(){
+  g4Round=0; g4Points=0;
+  $("#g4Sub").textContent = choice(levelIntroMessages.g4);
+  nextG4Round();
+}
+function nextG4Round(){
+  g4Round++;
+  if(g4Round>3){ completeChallenge(g4Points + addScore(15)); return; }
+  const row = $("#g4Row");
+  row.innerHTML = "";
+  const correctPos = randInt(0,2);
+  for(let i=0;i<3;i++){
+    const card = document.createElement("div");
+    card.className = "waveCard";
+    const cv = document.createElement("canvas");
+    cv.width = 260; cv.height = 80;
+    card.appendChild(cv);
+    const label = document.createElement("div");
+    label.className = "waveLabel";
+    label.textContent = "CH-"+(i+1);
+    card.appendChild(label);
+    const noiseLevel = i===correctPos ? 0 : rand(0.15+g4Round*0.05, 0.4+g4Round*0.05);
+    drawWave(cv, noiseLevel);
+    card.addEventListener("click", ()=> onG4Pick(card, i===correctPos));
+    row.appendChild(card);
+  }
+}
+function drawWave(cv, noise){
+  const ctx = cv.getContext("2d");
+  const w = cv.width, h = cv.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = "#5eead4";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const freq = 3;
+  for(let x=0;x<w;x++){
+    const t = x/w;
+    let y = Math.sin(t*Math.PI*2*freq) * (h*0.28);
+    if(noise>0){
+      y += (Math.random()-0.5) * noise * h * 0.9;
+      if(Math.random() < noise*0.05) y += (Math.random()-0.5)*h*0.6; // glitch spike
+    }
+    const py = h/2 - y;
+    if(x===0) ctx.moveTo(x,py); else ctx.lineTo(x,py);
+  }
+  ctx.stroke();
+}
+function onG4Pick(card, correct){
+  const row = $("#g4Row");
+  $$(".waveCard", row).forEach(c=> c.style.pointerEvents="none");
+  if(correct){
+    card.classList.add("correct");
+    SFX.correct();
+    g4Points += addScore(14);
+    toast(pickPraise());
+  }else{
+    card.classList.add("wrong");
+    SFX.wrong();
+    breakCombo();
+    toast(pickMiss());
+  }
+  setTimeout(nextG4Round, 900);
+}
+
+/* =========================================================
+   14. GAME 5 — VIRUS HUNT
+   ========================================================= */
+let g5Points=0, g5Caught=0, g5Needed=5, g5Timer=null, g5RafId=null, g5El=null, g5Pos={x:0,y:0}, g5Vel={x:0,y:0}, g5Arena=null;
+function startGame5(){
+  g5Points=0; g5Caught=0;
+  $("#g5Sub").textContent = choice(levelIntroMessages.g5) + ` Catch it ${g5Needed} times.`;
+  g5Arena = $("#g5Arena");
+  g5Arena.innerHTML = "";
+  g5El = document.createElement("div");
+  g5El.className = "virus";
+  g5El.textContent = "🦠";
+  g5Arena.appendChild(g5El);
+
+  const rect = g5Arena.getBoundingClientRect();
+  g5Pos = { x: rect.width/2, y: rect.height/2 };
+  g5Vel = { x: rand(-1.5,1.5)||1, y: rand(-1.5,1.5)||1 };
+
+  g5El.addEventListener("click", onG5Catch);
+
+  if(g5RafId) cancelAnimationFrame(g5RafId);
+  animateVirus();
+
+  if(g5Timer) g5Timer.cancel();
+  g5Timer = startTimer(18, null, ()=> endGame5(false));
+}
+function animateVirus(){
+  const rect = g5Arena.getBoundingClientRect();
+  const speedMul = 1 + g5Caught*0.28;
+  g5Pos.x += g5Vel.x*speedMul;
+  g5Pos.y += g5Vel.y*speedMul;
+  const size = 52;
+  if(g5Pos.x<0){ g5Pos.x=0; g5Vel.x*=-1; }
+  if(g5Pos.x>rect.width-size){ g5Pos.x=rect.width-size; g5Vel.x*=-1; }
+  if(g5Pos.y<0){ g5Pos.y=0; g5Vel.y*=-1; }
+  if(g5Pos.y>rect.height-size){ g5Pos.y=rect.height-size; g5Vel.y*=-1; }
+  if(Math.random()<0.02){ g5Vel.x += rand(-.6,.6); g5Vel.y += rand(-.6,.6); }
+  g5El.style.transform = `translate(${g5Pos.x}px, ${g5Pos.y}px)`;
+  g5RafId = requestAnimationFrame(animateVirus);
+}
+function onG5Catch(e){
+  e.stopPropagation();
+  SFX.correct();
+  g5Points += addScore(12);
+  g5Caught++;
+  spawnPopup("Caught!");
+  if(g5Caught>=g5Needed) endGame5(true);
+}
+function endGame5(success){
+  if(g5Timer) g5Timer.cancel();
+  if(g5RafId) cancelAnimationFrame(g5RafId);
+  if(g5El) g5El.style.pointerEvents = "none";
+  if(success) g5Points += addScore(30);
+  completeChallenge(g5Points);
+}
+
+})();
+</script>
+</body>
+</html>
